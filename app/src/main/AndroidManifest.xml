@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="pcp.com.myapplication">
+    package="pcp.com.bttemperature">
 
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
     <uses-permission android:name="android.permission.BLUETOOTH"/>
@@ -16,8 +16,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:name="pcp.com.myapplication.utilities.MyApplication">
-        <activity android:name=".MainActivity">
+        android:name="pcp.com.bttemperature.utilities.MyApplication">
+        <activity android:name="pcp.com.bttemperature.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

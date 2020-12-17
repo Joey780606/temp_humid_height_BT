@@ -1,4 +1,4 @@
-package pcp.com.myapplication.utilities;
+package pcp.com.bttemperature.utilities;
 
 import android.app.Application;
 import android.util.Log;

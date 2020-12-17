@@ -1,4 +1,4 @@
-package pcp.com.myapplication;
+package pcp.com.bttemperature;
 
 import org.junit.Test;
 
