@@ -6,7 +6,7 @@ import android.util.Log;
 import java.util.Timer;
 import java.util.TimerTask;
 
-class MyApplication extends Application {
+public class MyApplication extends Application {
     private Timer mActivityTransitionTimer;
     private TimerTask mActivityTransitionTimerTask;
     public boolean wasInBackground = true;
