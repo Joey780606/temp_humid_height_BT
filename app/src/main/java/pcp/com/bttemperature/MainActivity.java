@@ -1,6 +1,8 @@
 package pcp.com.bttemperature;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
 import de.ewmksoft.xyplot.core.XYPlot;
 import pcp.com.bttemperature.ambientDevice.AmbientDevice;
@@ -9,7 +11,9 @@ import pcp.com.bttemperature.ble.AmbientDeviceService;
 import pcp.com.bttemperature.ble.parser.AmbientDeviceAdvObject;
 import pcp.com.bttemperature.utilities.CelaerActivity;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -23,19 +27,30 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -58,13 +73,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
 //public class MainActivity extends AppCompatActivity {
 public class MainActivity extends CelaerActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+
 
     // 91 important, my variable
     ScanCallback scanCallback;
     private BluetoothLeScanner bluetoothLeScanner;
+    private int permissionFINE_LOCATION;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 100;
+    private int mCheckBLEPermission = 0;    // Check permission
+    private boolean keepScan = false;
 
     public static final String AMBIENT_SENSOR_UUID = "FEB1";
+
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private static boolean mDidClickItem;
 
     private AmbientDeviceSortAdapter mAdapter;
 
@@ -219,6 +241,227 @@ public class MainActivity extends CelaerActivity {
     };
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_device_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            //startActivity(new Intent(this, MasterSettingsActivity.class));
+            return true;
+        } else if (id != R.id.action_pair) {
+            return super.onOptionsItemSelected(item);
+        } else {
+            onShowPopup(findViewById(R.id.action_pair));
+            return true;
+        }
+    }
+
+    /* access modifiers changed from: private */
+    /* access modifiers changed from: public */
+    private void pairSensor() {
+        AmbientDeviceManager tempManager = AmbientDeviceManager.get(this);
+        if (this.mObjectToConnect.getDeviceType() == 0) {
+            this.mCurrentAmbientDevice = new AmbientDevice(this.mObjectToConnect, getString(R.string.sensor), tempManager.getAmbientDeviceCount());
+        } else if (this.mObjectToConnect.getDeviceType() == 1) {
+            this.mCurrentAmbientDevice = new AmbientDevice(this.mObjectToConnect, getString(R.string.precision), tempManager.getAmbientDeviceCount());
+        }
+        if (this.mObjectToConnect.createTimestampBase) {
+            this.mCurrentAmbientDevice.setTimestampBase();
+        }
+        this.mPairingComplete = false;
+        Intent gattServiceIntent = new Intent(this, AmbientDeviceService.class);
+        bindService(gattServiceIntent, this.mServiceConnection, 1);
+        startService(gattServiceIntent);
+        registerReceiver(this.mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        this.mAdapter.notifyDataSetChanged();
+        this.mProgressDialog = ProgressDialog.show(this, null, getString(R.string.connecting), true, true, new DialogInterface.OnCancelListener() {
+            /* class com.celaer.android.ambient.DeviceListActivity.DialogInterface$OnCancelListenerC02536 */
+
+            public void onCancel(DialogInterface dialog) {
+                Log.d(MainActivity.TAG, "connection canceled");
+                MainActivity.this.mAmbientDeviceService.disconnect();
+                joey_btScanDevices(false);
+                //MainActivity.this.mBluetoothAdapter.stopLeScan(DeviceListActivity.this);
+                MainActivity.this.mBroadcastScan = true;
+                joey_btScanDevices(true);
+                //MainActivity.this.mBluetoothAdapter.startLeScan(DeviceListActivity.this);
+            }
+        });
+    }
+
+    public void onShowPopup(View v) {
+        View inflatedView = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.popup_scanner, (ViewGroup) null, false);
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        float f = (float) size.y;
+        mDidClickItem = false;
+        try {
+            unregisterReceiver(this.mGattUpdateReceiver);
+            unbindService(this.mServiceConnection);
+        } catch (IllegalArgumentException e) {
+        }
+        stopService(new Intent(this, AmbientDeviceService.class));
+        this.popWindow = new PopupWindow(inflatedView, size.x - 150, size.y - 500, true);
+        this.popWindow.setBackgroundDrawable(getResources().getDrawable(R.drawable.rounded_rect));
+        this.popWindow.setFocusable(true);
+        this.popWindow.setOutsideTouchable(true);
+        this.popWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            /* class com.celaer.android.ambient.DeviceListActivity.C02547 */
+
+            public void onDismiss() {
+                MainActivity.this.handler.removeCallbacks(MainActivity.this.mScanRefresh);
+                joey_btScanDevices(false);
+                //MainActivity.this.mBluetoothAdapter.stopLeScan(MainActivity.this);
+                MainActivity.this.mBroadcastScan = true;
+                MainActivity.this.pairingListView = null;
+                if (!MainActivity.mDidClickItem) {
+                    Log.d(MainActivity.TAG, "restarting scan");
+                    joey_btScanDevices(false);
+                    //MainActivity.this.mBluetoothAdapter.stopLeScan(MainActivity.this);
+                    MainActivity.this.mBroadcastScan = true;
+                    joey_btScanDevices(true);
+                    //MainActivity.this.mBluetoothAdapter.startLeScan(MainActivity.this);
+                }
+            }
+        });
+        ((Button) inflatedView.findViewById(R.id.popup_scanner_cancelButton)).setOnClickListener(new View.OnClickListener() {
+            /* class com.celaer.android.ambient.DeviceListActivity.View$OnClickListenerC02558 */
+
+            public void onClick(View v) {
+                MainActivity.this.popWindow.dismiss();
+            }
+        });
+        this.mUnpairedObjects = new ArrayList<>();
+        this.pairingListView = (ListView) inflatedView.findViewById(R.id.popup_scanner_listView);
+        this.pairingListView.setEmptyView(inflatedView.findViewById(R.id.popup_scanner_list_emptyView));
+        this.pairingListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            /* class com.celaer.android.ambient.DeviceListActivity.C02569 */
+
+            @Override // android.widget.AdapterView.OnItemClickListener
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MainActivity.this.mObjectToConnect = (AmbientDeviceAdvObject) parent.getItemAtPosition(position);
+                Log.d(MainActivity.TAG, "connectionState: " + MainActivity.this.mBluetoothManager.getConnectionState(MainActivity.this.mObjectToConnect.getDevice(), 7));
+                boolean unused = MainActivity.mDidClickItem = true;
+                MainActivity.this.popWindow.dismiss();
+                MainActivity.this.handler.removeCallbacks(MainActivity.this.mScanRefresh);
+                MainActivity.this.mRestoreSensor = false;
+                if (AmbientDeviceManager.get(MainActivity.this).getAmbientDevice(MainActivity.this.mObjectToConnect.getAddress()) != null) {
+                    new AlertDialog.Builder(MainActivity.this).setTitle(R.string.previously_paired_device).setMessage(R.string.previously_paired_message).setPositiveButton(R.string.restore, new DialogInterface.OnClickListener() {
+                        /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02644 */
+
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            AmbientDeviceManager tempManager = AmbientDeviceManager.get(MainActivity.this);
+                            MainActivity.this.mCurrentAmbientDevice = tempManager.getAmbientDevice(MainActivity.this.mObjectToConnect.getAddress());
+                            MainActivity.this.mCurrentAmbientDevice.setFirmwareVersion(MainActivity.this.mObjectToConnect.getFirmwareVersion());
+                            MainActivity.this.mRestoreSensor = true;
+                            Intent gattServiceIntent = new Intent(MainActivity.this, AmbientDeviceService.class);
+                            MainActivity.this.bindService(gattServiceIntent, MainActivity.this.mServiceConnection, Context.BIND_AUTO_CREATE);
+                            MainActivity.this.startService(gattServiceIntent);
+                            MainActivity.this.registerReceiver(MainActivity.this.mGattUpdateReceiver, MainActivity.makeGattUpdateIntentFilter());
+                            MainActivity.this.mAdapter.notifyDataSetChanged();
+                            MainActivity.this.mProgressDialog = ProgressDialog.show(MainActivity.this, null, MainActivity.this.getString(R.string.connecting), true, true, new DialogInterface.OnCancelListener() {
+                                /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02644.DialogInterface$OnCancelListenerC02651 */
+
+                                public void onCancel(DialogInterface dialog) {
+                                    Log.d(MainActivity.TAG, "connection canceled");
+                                    MainActivity.this.mAmbientDeviceService.disconnect();
+                                    joey_btScanDevices(false);
+                                    //MainActivity.this.mBluetoothAdapter.stopLeScan(MainActivity.this);
+                                    MainActivity.this.mBroadcastScan = true;
+                                    joey_btScanDevices(true);
+                                    //MainActivity.this.mBluetoothAdapter.startLeScan(MainActivity.this);
+                                }
+                            });
+                        }
+                    }).setNegativeButton(R.string.erase, new DialogInterface.OnClickListener() {
+                        /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02623 */
+
+                        public void onClick(DialogInterface dialog, int which) {
+                            AmbientDeviceManager tempManager = AmbientDeviceManager.get(MainActivity.this);
+                            tempManager.deleteAmbientDevice(tempManager.getAmbientDevice(MainActivity.this.mObjectToConnect.getAddress()));
+                            if (MainActivity.this.mObjectToConnect.getDeviceType() == 0) {
+                                MainActivity.this.mCurrentAmbientDevice = new AmbientDevice(MainActivity.this.mObjectToConnect, MainActivity.this.getString(R.string.sensor), AmbientDeviceManager.get(MainActivity.this).getAmbientDeviceCount());
+                            } else if (MainActivity.this.mObjectToConnect.getDeviceType() == 1) {
+                                MainActivity.this.mCurrentAmbientDevice = new AmbientDevice(MainActivity.this.mObjectToConnect, MainActivity.this.getString(R.string.precision), AmbientDeviceManager.get(MainActivity.this).getAmbientDeviceCount());
+                            }
+                            MainActivity.this.mPairingComplete = false;
+                            Intent gattServiceIntent = new Intent(MainActivity.this, AmbientDeviceService.class);
+                            MainActivity.this.bindService(gattServiceIntent, MainActivity.this.mServiceConnection, Context.BIND_AUTO_CREATE);
+                            MainActivity.this.startService(gattServiceIntent);
+                            MainActivity.this.registerReceiver(MainActivity.this.mGattUpdateReceiver, MainActivity.makeGattUpdateIntentFilter());
+                            MainActivity.this.mAdapter.notifyDataSetChanged();
+                            MainActivity.this.mProgressDialog = ProgressDialog.show(MainActivity.this, null, MainActivity.this.getString(R.string.connecting), true, true, new DialogInterface.OnCancelListener() {
+                                /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02623.DialogInterface$OnCancelListenerC02631 */
+
+                                public void onCancel(DialogInterface dialog) {
+                                    Log.d(MainActivity.TAG, "connection canceled");
+                                    MainActivity.this.mAmbientDeviceService.disconnect();
+                                    joey_btScanDevices(false);
+                                    //MainActivity.this.mBluetoothAdapter.stopLeScan(MainActivity.this);
+                                    MainActivity.this.mBroadcastScan = true;
+                                    joey_btScanDevices(true);
+                                    //MainActivity.this.mBluetoothAdapter.startLeScan(MainActivity.this);
+                                }
+                            });
+                        }
+                    }).show();
+                } else if (MainActivity.this.mObjectToConnect.getDataExists()) {
+                    new AlertDialog.Builder(MainActivity.this).setTitle(R.string.previous_log_data_exists).setMessage(R.string.previous_log_message).setPositiveButton(R.string.keep, new DialogInterface.OnClickListener() {
+                        /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02612 */
+
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            MainActivity.this.pairSensor();
+                        }
+                    }).setNegativeButton(R.string.erase, new DialogInterface.OnClickListener() {
+                        /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02571 */
+
+                        public void onClick(DialogInterface dialog, int which) {
+                            new AlertDialog.Builder(MainActivity.this).setTitle(R.string.erase_or_ignore_data).setMessage(R.string.erase_or_ignore_message).setPositiveButton(R.string.keep, new DialogInterface.OnClickListener() {
+                                /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02571.DialogInterface$OnClickListenerC02603 */
+
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    MainActivity.this.pairSensor();
+                                }
+                            }).setNeutralButton(R.string.ignore, new DialogInterface.OnClickListener() {
+                                /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02571.DialogInterface$OnClickListenerC02592 */
+
+                                public void onClick(DialogInterface dialog, int which) {
+                                    MainActivity.this.mObjectToConnect.createTimestampBase = true;
+                                    MainActivity.this.pairSensor();
+                                }
+                            }).setNegativeButton(R.string.erase, new DialogInterface.OnClickListener() {
+                                /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02571.DialogInterface$OnClickListenerC02581 */
+
+                                public void onClick(DialogInterface dialog, int which) {
+                                    MainActivity.this.mObjectToConnect.deleteTempDataAfterPairing = true;
+                                    MainActivity.this.pairSensor();
+                                }
+                            }).show();
+                        }
+                    }).show();
+                } else {
+                    MainActivity.this.pairSensor();
+                }
+            }
+        });
+        this.mLeDeviceListAdapter = new LeDeviceListAdapter(this, this.mUnpairedObjects);
+        this.mLeDeviceListAdapter.setNotifyOnChange(true);
+        this.pairingListView.setAdapter((ListAdapter) this.mLeDeviceListAdapter);
+        this.popWindow.showAtLocation(v, 17, 0, 100);
+        joey_btScanDevices(false);
+        //this.mBluetoothAdapter.stopLeScan(this);
+        this.mBroadcastScan = false;
+        joey_btScanDevices(true);
+        //this.mBluetoothAdapter.startLeScan(this);
+        this.mScanRefresh.run();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //getActionBar().setDisplayShowTitleEnabled(false);  // 91 important
@@ -245,8 +488,11 @@ public class MainActivity extends CelaerActivity {
         this.mListView.setAdapter((ListAdapter) this.mAdapter);
         this.mListView.setEmptyView(findViewById(R.id.activity_device_list_emptyView));
 
+        fCheckPermission();
         this.mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         this.mBluetoothAdapter = this.mBluetoothManager.getAdapter();
+        this.bluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+
         valuesTemp = new ArrayList<>();
         valuesHumidity = new ArrayList<>();
         xAxisTemp = new ArrayList<>();
@@ -728,7 +974,19 @@ public class MainActivity extends CelaerActivity {
 
     // 91 important, New BT scan
     public void joey_btScanDevices(boolean action) {
+
+        if(action == true)
+            if(!keepScan)
+                keepScan = true;
+            else
+                return;
+        else {
+            if(keepScan)
+                return;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Log.v(TAG, "Joey test 000:" + (this.mBluetoothAdapter != null) + " , " + action);
             if (this.mBluetoothAdapter != null) {
                 fCheckBle(action);
             }
@@ -737,6 +995,7 @@ public class MainActivity extends CelaerActivity {
 
     @RequiresApi(21)
     void fCheckBle(boolean bOnOff) {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if(bOnOff) {
                 scanCallback = null;
@@ -744,23 +1003,28 @@ public class MainActivity extends CelaerActivity {
                     @Override
                     public void onScanResult(int callbackType, ScanResult scanResult) {
                         final AmbientDeviceAdvObject newObject = new AmbientDeviceAdvObject(scanResult.getDevice(), scanResult.getScanRecord().getBytes());
+                        Log.v(TAG, "Joey test 001:" + MainActivity.this.mBroadcastScan + " , " + newObject.getUUID() + " , " + newObject.isBroadcastMode() + " , " + newObject.getFirmwareVersionComponents()[0] + " , " + newObject.getFirmwareVersionComponents()[1]);
                         if (MainActivity.this.mBroadcastScan) {
+                            Log.v(TAG, "Joey test 0021");
                             if (newObject.getUUID().equals(AMBIENT_SENSOR_UUID) && newObject.isBroadcastMode()) {
                                 runOnUiThread(new Runnable() {
                                     /* class com.celaer.android.ambient.DeviceListActivity.RunnableC024212 */
 
                                     public void run() {
+                                        Log.v(TAG, "Joey test 0022");
                                         MainActivity.this.updateDevice(newObject);
                                     }
                                 });
                             }
                         } else if (newObject.getUUID().equals(AMBIENT_SENSOR_UUID) && !newObject.isBroadcastMode()) {
+                            Log.v(TAG, "Joey test 0031");
                             int[] version = newObject.getFirmwareVersionComponents();
                             if ((version[0] == 0 && version[1] >= 2) || version[0] > 0) {
                                 runOnUiThread(new Runnable() {
                                     /* class com.celaer.android.ambient.DeviceListActivity.RunnableC024313 */
 
                                     public void run() {
+                                        Log.v(TAG, "Joey test 0032");
                                         MainActivity.this.deviceFound(newObject);
                                     }
                                 });
@@ -773,9 +1037,11 @@ public class MainActivity extends CelaerActivity {
 
                     }
                 };
+
+                bluetoothLeScanner.startScan(scanCallback);
             } else {
                 if(scanCallback != null) {
-                    bluetoothLeScanner.stopScan(scanCallback);
+                    MainActivity.this.bluetoothLeScanner.stopScan(scanCallback);
                 }
             }
         }
@@ -843,4 +1109,64 @@ public class MainActivity extends CelaerActivity {
             }
         }
     }
+
+    /* access modifiers changed from: private */
+    public static IntentFilter makeGattUpdateIntentFilter() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AmbientDeviceService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(AmbientDeviceService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(AmbientDeviceService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(AmbientDeviceService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(AmbientDeviceService.ACTION_SUBSCRIPTION_FINISHED);
+        intentFilter.addAction(AmbientDeviceService.ACTION_WRITE_SUCCESSFUL);
+        intentFilter.addAction(AmbientDeviceService.ACTION_ERROR);
+        intentFilter.addAction(AmbientDeviceService.ACTION_CONDITIONS_CURRENT_RECEIVED);
+        intentFilter.addAction(AmbientDeviceService.ACTION_CONDITIONS_DATA_RECEIVED);
+        intentFilter.addAction(AmbientDeviceService.ACTION_AMBIENT_SETTINGS_RECEIVED);
+        return intentFilter;
+    }
+
+    private void fCheckPermission() {
+        int iWork = -1;
+        permissionFINE_LOCATION = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        //permissionACCESS_BACKGROUND_LOCATION = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+
+        Log.v(TAG, "permissionCheck check:" + permissionFINE_LOCATION);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {  // Need < 6.0
+            iWork = 1;
+        } else if (permissionFINE_LOCATION != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        } else if (permissionFINE_LOCATION == PackageManager.PERMISSION_GRANTED) {
+            iWork = 1;
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        int ivalue = -1;
+        mCheckBLEPermission = 0;
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                for (int i = 0; i < permissions.length; i++) {
+                    Log.v(TAG, "PermissionResult:" + i + " , " + permissions[i] + " , " + grantResults[i]);
+                    if (ivalue == -1) {
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED && permissions[i].equals("android.permission.ACCESS_FINE_LOCATION")) {
+                            ivalue = 1;
+                            break;
+                        }
+                    }
+                }
+                // If request is cancelled, the result arrays are empty.
+                if (permissions.length > 0 && ivalue == 1) {
+                    mCheckBLEPermission = 1;
+                }
+                break;
+            }
+
+            default:
+                break;
+        }
+    }
+
 }
