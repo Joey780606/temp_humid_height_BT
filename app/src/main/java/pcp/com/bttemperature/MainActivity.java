@@ -9,11 +9,14 @@ import pcp.com.bttemperature.ambientDevice.AmbientDevice;
 import pcp.com.bttemperature.ambientDevice.AmbientDeviceManager;
 import pcp.com.bttemperature.ble.AmbientDeviceService;
 import pcp.com.bttemperature.ble.parser.AmbientDeviceAdvObject;
+import pcp.com.bttemperature.database.ConditionDatabaseHelper;
+import pcp.com.bttemperature.database.SQLiteCursorLoader;
 import pcp.com.bttemperature.utilities.CelaerActivity;
 
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.LoaderManager;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -28,9 +31,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.Loader;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
@@ -58,11 +63,13 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.androidplot.xy.XYSeries;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +78,7 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 //public class MainActivity extends AppCompatActivity {
-public class MainActivity extends CelaerActivity {
+public class MainActivity extends CelaerActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
 
 
@@ -87,6 +94,9 @@ public class MainActivity extends CelaerActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static boolean mDidClickItem;
+    private static boolean mLoading = true;
+
+    private static AmbientDevice mUpdateAmbientDevice;
 
     private AmbientDeviceSortAdapter mAdapter;
 
@@ -572,6 +582,165 @@ public class MainActivity extends CelaerActivity {
             }
         };
     }
+
+    /* access modifiers changed from: protected */
+    @Override // com.celaer.android.ambient.utilities.CelaerActivity
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+        AmbientDeviceManager manager = AmbientDeviceManager.get(this);
+        int count = manager.getAmbientDeviceCount();
+        Log.d(TAG, "retrieved " + count + " devices");
+        boolean errorFound = false;
+        int i = 0;
+        while (true) {
+            if (i >= count) {
+                break;
+            }
+            AmbientDevice device = manager.getAmbientDevice(i);
+            if (device == null) {
+                Log.d(TAG, "null device: " + i);
+                errorFound = true;
+                break;
+            }
+            Log.d(TAG, "device: " + device.getHexName() + " sortIndex: " + device.sortIndex);
+            i++;
+        }
+        if (errorFound) {
+            ArrayList<String> addressList = new ArrayList<>();
+            ArrayList<AmbientDevice> devices = manager.getAmbientDevices();
+            ArrayList<AmbientDevice> objectsToDelete = new ArrayList<>();
+            for (int i2 = 0; i2 < devices.size(); i2++) {
+                String deviceAddress = devices.get(i2).getAddress();
+                if (addressList.contains(deviceAddress)) {
+                    Log.d(TAG, "duplicate device found");
+                    objectsToDelete.add(devices.get(i2));
+                } else {
+                    addressList.add(deviceAddress);
+                }
+            }
+            if (objectsToDelete.size() != 0) {
+                Log.d(TAG, "objectsToDelete not zero");
+                Iterator<AmbientDevice> it = objectsToDelete.iterator();
+                while (it.hasNext()) {
+                    AmbientDevice device2 = it.next();
+                    Log.d(TAG, "deleting: " + device2.getAddress());
+                    manager.deleteAmbientDevice(device2);
+                }
+            }
+        }
+        SharedPreferences preferences = getSharedPreferences("com.celaer.android.ambient.preferences", 0);
+        preferences.edit();
+        String dstFix = preferences.getString("DST_FIX", "never");
+        if (dstFix.equalsIgnoreCase("never")) {
+            Log.d(TAG, "starting DST fix");
+            this.mUpdatePointer = 0;
+            startNextUpdate();
+        } else if (dstFix.equalsIgnoreCase("yes")) {
+            Log.d(TAG, "DST fix already implemented");
+        }
+        ensureBLESupported();
+        if (!isBLEEnabled()) {
+            showBLEDialog();
+        }
+        //this.mBluetoothAdapter.stopLeScan(this);
+        joey_btScanDevices(false);
+        this.mBroadcastScan = true;
+        this.rRestartScan.run();
+        this.mAdapter.notifyDataSetChanged();
+        this.handler.postDelayed(this.f12r, 1000);
+        stopService(new Intent(this, AmbientDeviceService.class));
+    }
+
+    /* access modifiers changed from: protected */
+    @Override // com.celaer.android.ambient.utilities.CelaerActivity
+    public void onPause() {
+        super.onPause();
+        this.handler.removeCallbacks(this.f12r);
+        this.handler.removeCallbacks(this.rStartNextSync);
+        this.handler.removeCallbacks(this.rRestartScan);
+        //this.mBluetoothAdapter.stopLeScan(this);
+        joey_btScanDevices(false);
+        try {
+            unregisterReceiver(this.mGattUpdateReceiver);
+            unbindService(this.mServiceConnection);
+        } catch (IllegalArgumentException e) {
+        }
+        this.mAmbientDeviceService = null;
+        AmbientDeviceManager.get(this).saveAmbientDevices();
+    }
+
+    private boolean startNextUpdate() {
+        while (this.mUpdatePointer < AmbientDeviceManager.get(this).getAmbientDevices().size()) {
+            AmbientDevice device = AmbientDeviceManager.get(this).getAmbientDevice(this.mUpdatePointer);
+            this.mUpdatePointer++;
+            String firmwareVersion = device.getFirmwareVersion();
+            Log.d(TAG, "firmwareVersion: " + firmwareVersion);
+            String[] versions = firmwareVersion.split("\\.");
+            if (Integer.valueOf(versions[0]).intValue() == 0 && Integer.valueOf(versions[1]).intValue() <= 5) {
+                Log.e(TAG, "found device to update: " + device.getAddress());
+                Calendar cal1 = Calendar.getInstance();
+                cal1.set(2016, 0, 3, 0, 0, 0);
+                Calendar cal2 = Calendar.getInstance();
+                cal2.set(2017, 0, 3, 0, 0, 0);
+                timestamp1 = cal1.getTime().getTime() / 1000;
+                timestamp2 = cal2.getTime().getTime() / 1000;
+                mUpdateAmbientDevice = device;
+                Log.d(TAG, "starting loader");
+                getLoaderManager().restartLoader(3, null, this);
+                return true;
+            }
+        }
+        SharedPreferences.Editor editor = getSharedPreferences("com.celaer.android.ambient.preferences", 0).edit();
+        editor.putString("DST_FIX", "yes");
+        editor.commit();
+        Log.d(TAG, "fix finished");
+        return false;
+    }
+
+    private static class ConditionListBetweenCursorLoader extends SQLiteCursorLoader {
+        public ConditionListBetweenCursorLoader(Context context) {
+            super(context);
+        }
+
+        /* access modifiers changed from: protected */
+        @Override // com.celaer.android.ambient.database.SQLiteCursorLoader
+        public Cursor loadCursor() {
+            Log.d(MainActivity.TAG, "loadCursor: " + MainActivity.mUpdateAmbientDevice.getAddress() + " " + MainActivity.timestamp1 + ":" + MainActivity.timestamp2);
+            boolean unused = MainActivity.mLoading = true;
+            return AmbientDeviceManager.get(getContext()).queryConditionsBetweenTimestamps(MainActivity.mUpdateAmbientDevice.getAddress(), MainActivity.timestamp1, MainActivity.timestamp2);
+        }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        if (id == 3) {
+            return new ConditionListBetweenCursorLoader(this);
+        }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if (cursor != null) {
+            Log.d(TAG, "conditions retrieved: " + cursor.getCount());
+            cursor.moveToFirst();
+            int timestampIndex = cursor.getColumnIndex(ConditionDatabaseHelper.COLUMN_CONDITIONS_TIMESTAMP);
+            for (int i = 0; i < cursor.getCount(); i++) {
+                AmbientDeviceManager.get(this).updateConditionTimestamp(cursor.getLong(cursor.getColumnIndex("_id")), cursor.getLong(timestampIndex) - 172800);
+                cursor.moveToNext();
+            }
+        }
+        cursor.close();
+        Log.d(TAG, "onLoadFinished");
+        startNextUpdate();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
 
     public class AmbientDeviceSortAdapter extends BaseAdapter {
         public AmbientDeviceSortAdapter() {
@@ -1169,4 +1338,21 @@ public class MainActivity extends CelaerActivity {
         }
     }
 
+    private void ensureBLESupported() {
+        if (!getPackageManager().hasSystemFeature("android.hardware.bluetooth_le")) {
+            Toast.makeText(this, (int) R.string.ble_not_supported, Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+    /* access modifiers changed from: protected */
+    public boolean isBLEEnabled() {
+        BluetoothAdapter adapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
+        return adapter != null && adapter.isEnabled();
+    }
+
+    /* access modifiers changed from: protected */
+    public void showBLEDialog() {
+        startActivityForResult(new Intent("android.bluetooth.adapter.action.REQUEST_ENABLE"), 0);
+    }
 }
