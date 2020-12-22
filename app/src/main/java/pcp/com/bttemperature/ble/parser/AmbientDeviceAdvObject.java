@@ -9,10 +9,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import pcp.com.bttemperature.MainActivity;
 import pcp.com.bttemperature.parse.ParseException;
 import 	androidx.core.view.MotionEventCompat;
 
 public class AmbientDeviceAdvObject {
+    private static final String TAG = AmbientDeviceAdvObject.class.getSimpleName();
+
     public final int HUMIDITY_INVALID = ParseException.OBJECT_NOT_FOUND;
     public final long LIGHT_INVALID = 65535;
     public final double TEMP_INVALID = 71.0d;
@@ -69,7 +72,21 @@ public class AmbientDeviceAdvObject {
         this.minUV = MotionEvent.ACTION_MASK;
         this.uuid = "0000";
         this.broadcastMode = true;
+
+        String scanInfo;
+
+        if(scanRecord.length > 60) {
+            scanInfo = String.format("len: %d, ScanInfo=%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X", scanRecord.length,
+                    scanRecord[0], scanRecord[1], scanRecord[2], scanRecord[3], scanRecord[4], scanRecord[5], scanRecord[6], scanRecord[7], scanRecord[8], scanRecord[9],
+                    scanRecord[10], scanRecord[11], scanRecord[12], scanRecord[13], scanRecord[14], scanRecord[15], scanRecord[16], scanRecord[17], scanRecord[18], scanRecord[19],
+                    scanRecord[20], scanRecord[21], scanRecord[22], scanRecord[23], scanRecord[24], scanRecord[25], scanRecord[26], scanRecord[27], scanRecord[28], scanRecord[29],
+                    scanRecord[30], scanRecord[31], scanRecord[32], scanRecord[33], scanRecord[34], scanRecord[35], scanRecord[36], scanRecord[37], scanRecord[38], scanRecord[39],
+                    scanRecord[40], scanRecord[41], scanRecord[42], scanRecord[43], scanRecord[44], scanRecord[45], scanRecord[46], scanRecord[47], scanRecord[48], scanRecord[49],
+                    scanRecord[50], scanRecord[51], scanRecord[52], scanRecord[53], scanRecord[54], scanRecord[55], scanRecord[56], scanRecord[57], scanRecord[58], scanRecord[59]);
+            //Log.v(TAG, "Joey test 0041:" + scanInfo );
+        }
         for (AdRecord record : AdRecord.parseScanRecord(scanRecord)) {
+            //Log.v(TAG, "Joey test 0040:" + record.mType + " , " + record.mData.length );
             if (record.mType == 3) {
                 if (record.mData.length == 2) {
                     tempUUID = String.format("%02X%02X", Integer.valueOf(record.mData[1]), Integer.valueOf(record.mData[0])).toUpperCase();
@@ -283,6 +300,7 @@ public class AmbientDeviceAdvObject {
                 for (int i = 0; i < data.length; i++) {
                     dataInt[i] = AmbientDeviceAdvObject.byteToUnsignedInt(data[i]);
                 }
+                //Log.v(TAG, "Joey test 0041 parsing:" + b + " , " + type + " , " + data.length);
                 records.add(new AdRecord(b, type, dataInt));
                 index = index2 + b;
             }

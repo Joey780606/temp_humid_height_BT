@@ -383,6 +383,7 @@ public class AmbientDeviceService extends Service {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
         }
+        Log.v(TAG, "Joey 201222 start pair 003");
         if (mBluetoothGatt != null) {
             Log.d(TAG, "gatt.close()");
             mBluetoothGatt.close();
@@ -393,6 +394,7 @@ public class AmbientDeviceService extends Service {
             Log.w(TAG, "Device not found.  Unable to connect.");
             return false;
         }
+
         refreshDeviceCache(mBluetoothGatt);
         mBluetoothGatt = device.connectGatt(this, false, this.mGattCallback);
         Log.d(TAG, "Trying to create a new connection.");

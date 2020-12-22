@@ -36,6 +36,20 @@
     <TextView
         android:textSize="18sp"
         android:layout_gravity="center_horizontal"
+        android:id="@+id/popup_scanner_list_textView"
+        android:background="@color/white"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:text="Sensor FB4"
+        android:layout_above="@+id/popup_scanner_cancelButton"
+        android:layout_below="@+id/popup_scanner_messageTextView"/>
+    <TextView
+        android:textSize="18sp"
+        android:layout_gravity="center_horizontal"
         android:id="@+id/popup_scanner_list_emptyView"
         android:background="@color/white"
         android:padding="16dp"

@@ -79,9 +79,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 //public class MainActivity extends AppCompatActivity {
 public class MainActivity extends CelaerActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-
-
-
     // 91 important, my variable
     ScanCallback scanCallback;
     private BluetoothLeScanner bluetoothLeScanner;
@@ -202,9 +199,11 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
             MainActivity.this.mAmbientDeviceService = ((AmbientDeviceService.LocalBinder) service).getService();
             Log.e(MainActivity.TAG, "Service Connection Successful");
             if (!MainActivity.this.mAmbientDeviceService.initialize()) {
+                Log.v(TAG, "Joey 201222 start pair 000");
                 Log.e(MainActivity.TAG, "Unable to initialize Bluetooth");
                 MainActivity.this.finish();
             }
+            Log.v(TAG, "Joey 201222 start pair 001");
             MainActivity.this.mAmbientDeviceService.connect(MainActivity.this.mCurrentAmbientDevice.getAddress());
         }
 
@@ -284,9 +283,10 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
         }
         this.mPairingComplete = false;
         Intent gattServiceIntent = new Intent(this, AmbientDeviceService.class);
-        bindService(gattServiceIntent, this.mServiceConnection, 1);
+        bindService(gattServiceIntent, this.mServiceConnection, Context.BIND_AUTO_CREATE);
         startService(gattServiceIntent);
         registerReceiver(this.mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        Log.v(TAG, "Joey 201222 start pair");
         this.mAdapter.notifyDataSetChanged();
         this.mProgressDialog = ProgressDialog.show(this, null, getString(R.string.connecting), true, true, new DialogInterface.OnCancelListener() {
             /* class com.celaer.android.ambient.DeviceListActivity.DialogInterface$OnCancelListenerC02536 */
@@ -346,7 +346,8 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
                 MainActivity.this.popWindow.dismiss();
             }
         });
-        this.mUnpairedObjects = new ArrayList<>();
+        //if(this.mUnpairedObjects == null)
+            this.mUnpairedObjects = new ArrayList<>();
         this.pairingListView = (ListView) inflatedView.findViewById(R.id.popup_scanner_listView);
         this.pairingListView.setEmptyView(inflatedView.findViewById(R.id.popup_scanner_list_emptyView));
         this.pairingListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -463,6 +464,8 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
         this.mLeDeviceListAdapter.setNotifyOnChange(true);
         this.pairingListView.setAdapter((ListAdapter) this.mLeDeviceListAdapter);
         this.popWindow.showAtLocation(v, 17, 0, 100);
+        //this.mLeDeviceListAdapter.notifyDataSetChanged();
+
         joey_btScanDevices(false);
         //this.mBluetoothAdapter.stopLeScan(this);
         this.mBroadcastScan = false;
@@ -1155,7 +1158,7 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Log.v(TAG, "Joey test 000:" + (this.mBluetoothAdapter != null) + " , " + action);
+            //Log.v(TAG, "Joey test 000:" + (this.mBluetoothAdapter != null) + " , " + action);
             if (this.mBluetoothAdapter != null) {
                 fCheckBle(action);
             }
@@ -1171,34 +1174,37 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
                 scanCallback = new ScanCallback() {
                     @Override
                     public void onScanResult(int callbackType, ScanResult scanResult) {
+                        //Log.v(TAG, "Joey test 000---------------------------");
                         final AmbientDeviceAdvObject newObject = new AmbientDeviceAdvObject(scanResult.getDevice(), scanResult.getScanRecord().getBytes());
-                        Log.v(TAG, "Joey test 001:" + MainActivity.this.mBroadcastScan + " , " + newObject.getUUID() + " , " + newObject.isBroadcastMode() + " , " + newObject.getFirmwareVersionComponents()[0] + " , " + newObject.getFirmwareVersionComponents()[1]);
+                        //scanResult.
+                        //Log.v(TAG, "Joey test 001:" + MainActivity.this.mBroadcastScan + " , " + newObject.getUUID() + " , " + newObject.isBroadcastMode() + " , " + newObject.getFirmwareVersionComponents()[0] + " , " + newObject.getFirmwareVersionComponents()[1] + " , " + scanResult.getDevice().getAddress());
                         if (MainActivity.this.mBroadcastScan) {
-                            Log.v(TAG, "Joey test 0021");
+                            //Log.v(TAG, "Joey test 0021");
                             if (newObject.getUUID().equals(AMBIENT_SENSOR_UUID) && newObject.isBroadcastMode()) {
                                 runOnUiThread(new Runnable() {
                                     /* class com.celaer.android.ambient.DeviceListActivity.RunnableC024212 */
 
                                     public void run() {
-                                        Log.v(TAG, "Joey test 0022");
+                                        //Log.v(TAG, "Joey test 0022");
                                         MainActivity.this.updateDevice(newObject);
                                     }
                                 });
                             }
                         } else if (newObject.getUUID().equals(AMBIENT_SENSOR_UUID) && !newObject.isBroadcastMode()) {
-                            Log.v(TAG, "Joey test 0031");
+                            //Log.v(TAG, "Joey test 0031");
                             int[] version = newObject.getFirmwareVersionComponents();
                             if ((version[0] == 0 && version[1] >= 2) || version[0] > 0) {
                                 runOnUiThread(new Runnable() {
                                     /* class com.celaer.android.ambient.DeviceListActivity.RunnableC024313 */
 
                                     public void run() {
-                                        Log.v(TAG, "Joey test 0032");
+                                        //Log.v(TAG, "Joey test 0032");
                                         MainActivity.this.deviceFound(newObject);
                                     }
                                 });
                             }
                         }
+                        //Log.v(TAG, "Joey test 000===================");
                     }
 
                     @Override
@@ -1239,9 +1245,10 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
             }
         }
         if (!deviceFound) {
-            Log.d(TAG, "foundObject: " + newObject);
+            //Log.d(TAG, "Joey test 0050 foundObject: " + newObject);
             this.mUnpairedObjects.add(newObject);
             this.mLeDeviceListAdapter.notifyDataSetChanged();
+            //Log.d(TAG, "Joey test 0051 : " + this.mLeDeviceListAdapter.getCount());
         }
     }
 
@@ -1252,22 +1259,41 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
         public LeDeviceListAdapter(Context context, ArrayList<AmbientDeviceAdvObject> ambientDevices) {
             super(context, 0, ambientDevices);
             this.mInflator = MainActivity.this.getLayoutInflater();
+            //Log.v(TAG, "Joey test 005 constructor");
         }
 
+        @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             ViewHolder viewHolder;
+            boolean isNull = false;
             AmbientDeviceAdvObject currentAmbientAdvObject = (AmbientDeviceAdvObject) getItem(position);
             if (convertView == null) {
+                isNull = true;
                 viewHolder = new ViewHolder();
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.popup_scanner, parent, false);
-                viewHolder.name = (TextView) convertView.findViewById(R.id.popup_scanner_list_emptyView);
+                viewHolder.name = (TextView) convertView.findViewById(R.id.popup_scanner_list_textView);
+                //viewHolder.name = (TextView) convertView.findViewById(R.id.popup_scanner_listView);
                 convertView.setTag(viewHolder);
+
+                Joey_pair_device(currentAmbientAdvObject);
             } else {
+                isNull = false;
                 viewHolder = (ViewHolder) convertView.getTag();
+                //viewHolder.name = (TextView) convertView.findViewById(R.id.popup_scanner_list_emptyView);
             }
             viewHolder.name.setText(MainActivity.this.getString(R.string.sensor) + " " + currentAmbientAdvObject.getHexName());
+            Log.v(TAG, "Joey test 005:" + MainActivity.this.getString(R.string.sensor) + " " + currentAmbientAdvObject.getHexName() + " , " +  position + " , " + isNull + " , " + currentAmbientAdvObject);
             viewHolder.row = position;
+
+
+            //MainActivity.this.popWindow.showAtLocation(convertView, 17, 0, 100);
+            //notifyDataSetChanged();
             return convertView;
+        }
+
+        @Override
+        public int getCount() {
+            return super.getCount();
         }
 
         private class ViewHolder {
@@ -1354,5 +1380,111 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
     /* access modifiers changed from: protected */
     public void showBLEDialog() {
         startActivityForResult(new Intent("android.bluetooth.adapter.action.REQUEST_ENABLE"), 0);
+    }
+
+    private void Joey_pair_device(AmbientDeviceAdvObject currentAmbientAdvObject) {
+        MainActivity.this.mObjectToConnect = currentAmbientAdvObject;
+        Log.d(MainActivity.TAG, "connectionState: " + MainActivity.this.mBluetoothManager.getConnectionState(MainActivity.this.mObjectToConnect.getDevice(), 7));
+        boolean unused = MainActivity.mDidClickItem = true;
+        MainActivity.this.popWindow.dismiss();
+        MainActivity.this.handler.removeCallbacks(MainActivity.this.mScanRefresh);
+        MainActivity.this.mRestoreSensor = false;
+        if (AmbientDeviceManager.get(MainActivity.this).getAmbientDevice(MainActivity.this.mObjectToConnect.getAddress()) != null) {
+            new AlertDialog.Builder(MainActivity.this).setTitle(R.string.previously_paired_device).setMessage(R.string.previously_paired_message).setPositiveButton(R.string.restore, new DialogInterface.OnClickListener() {
+                /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02644 */
+
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    AmbientDeviceManager tempManager = AmbientDeviceManager.get(MainActivity.this);
+                    MainActivity.this.mCurrentAmbientDevice = tempManager.getAmbientDevice(MainActivity.this.mObjectToConnect.getAddress());
+                    MainActivity.this.mCurrentAmbientDevice.setFirmwareVersion(MainActivity.this.mObjectToConnect.getFirmwareVersion());
+                    MainActivity.this.mRestoreSensor = true;
+                    Intent gattServiceIntent = new Intent(MainActivity.this, AmbientDeviceService.class);
+                    MainActivity.this.bindService(gattServiceIntent, MainActivity.this.mServiceConnection, Context.BIND_AUTO_CREATE);
+                    MainActivity.this.startService(gattServiceIntent);
+                    MainActivity.this.registerReceiver(MainActivity.this.mGattUpdateReceiver, MainActivity.makeGattUpdateIntentFilter());
+                    MainActivity.this.mAdapter.notifyDataSetChanged();
+                    MainActivity.this.mProgressDialog = ProgressDialog.show(MainActivity.this, null, MainActivity.this.getString(R.string.connecting), true, true, new DialogInterface.OnCancelListener() {
+                        /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02644.DialogInterface$OnCancelListenerC02651 */
+
+                        public void onCancel(DialogInterface dialog) {
+                            Log.d(MainActivity.TAG, "connection canceled");
+                            MainActivity.this.mAmbientDeviceService.disconnect();
+                            joey_btScanDevices(false);
+                            //MainActivity.this.mBluetoothAdapter.stopLeScan(MainActivity.this);
+                            MainActivity.this.mBroadcastScan = true;
+                            joey_btScanDevices(true);
+                            //MainActivity.this.mBluetoothAdapter.startLeScan(MainActivity.this);
+                        }
+                    });
+                }
+            }).setNegativeButton(R.string.erase, new DialogInterface.OnClickListener() {
+                /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02623 */
+
+                public void onClick(DialogInterface dialog, int which) {
+                    AmbientDeviceManager tempManager = AmbientDeviceManager.get(MainActivity.this);
+                    tempManager.deleteAmbientDevice(tempManager.getAmbientDevice(MainActivity.this.mObjectToConnect.getAddress()));
+                    if (MainActivity.this.mObjectToConnect.getDeviceType() == 0) {
+                        MainActivity.this.mCurrentAmbientDevice = new AmbientDevice(MainActivity.this.mObjectToConnect, MainActivity.this.getString(R.string.sensor), AmbientDeviceManager.get(MainActivity.this).getAmbientDeviceCount());
+                    } else if (MainActivity.this.mObjectToConnect.getDeviceType() == 1) {
+                        MainActivity.this.mCurrentAmbientDevice = new AmbientDevice(MainActivity.this.mObjectToConnect, MainActivity.this.getString(R.string.precision), AmbientDeviceManager.get(MainActivity.this).getAmbientDeviceCount());
+                    }
+                    MainActivity.this.mPairingComplete = false;
+                    Intent gattServiceIntent = new Intent(MainActivity.this, AmbientDeviceService.class);
+                    MainActivity.this.bindService(gattServiceIntent, MainActivity.this.mServiceConnection, Context.BIND_AUTO_CREATE);
+                    MainActivity.this.startService(gattServiceIntent);
+                    MainActivity.this.registerReceiver(MainActivity.this.mGattUpdateReceiver, MainActivity.makeGattUpdateIntentFilter());
+                    MainActivity.this.mAdapter.notifyDataSetChanged();
+                    MainActivity.this.mProgressDialog = ProgressDialog.show(MainActivity.this, null, MainActivity.this.getString(R.string.connecting), true, true, new DialogInterface.OnCancelListener() {
+                        /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02623.DialogInterface$OnCancelListenerC02631 */
+
+                        public void onCancel(DialogInterface dialog) {
+                            Log.d(MainActivity.TAG, "connection canceled");
+                            MainActivity.this.mAmbientDeviceService.disconnect();
+                            joey_btScanDevices(false);
+                            //MainActivity.this.mBluetoothAdapter.stopLeScan(MainActivity.this);
+                            MainActivity.this.mBroadcastScan = true;
+                            joey_btScanDevices(true);
+                            //MainActivity.this.mBluetoothAdapter.startLeScan(MainActivity.this);
+                        }
+                    });
+                }
+            }).show();
+        } else if (MainActivity.this.mObjectToConnect.getDataExists()) {
+            new AlertDialog.Builder(MainActivity.this).setTitle(R.string.previous_log_data_exists).setMessage(R.string.previous_log_message).setPositiveButton(R.string.keep, new DialogInterface.OnClickListener() {
+                /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02612 */
+
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    MainActivity.this.pairSensor();
+                }
+            }).setNegativeButton(R.string.erase, new DialogInterface.OnClickListener() {
+                /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02571 */
+
+                public void onClick(DialogInterface dialog, int which) {
+                    new AlertDialog.Builder(MainActivity.this).setTitle(R.string.erase_or_ignore_data).setMessage(R.string.erase_or_ignore_message).setPositiveButton(R.string.keep, new DialogInterface.OnClickListener() {
+                        /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02571.DialogInterface$OnClickListenerC02603 */
+
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            MainActivity.this.pairSensor();
+                        }
+                    }).setNeutralButton(R.string.ignore, new DialogInterface.OnClickListener() {
+                        /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02571.DialogInterface$OnClickListenerC02592 */
+
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.this.mObjectToConnect.createTimestampBase = true;
+                            MainActivity.this.pairSensor();
+                        }
+                    }).setNegativeButton(R.string.erase, new DialogInterface.OnClickListener() {
+                        /* class com.celaer.android.ambient.DeviceListActivity.C02569.DialogInterface$OnClickListenerC02571.DialogInterface$OnClickListenerC02581 */
+
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.this.mObjectToConnect.deleteTempDataAfterPairing = true;
+                            MainActivity.this.pairSensor();
+                        }
+                    }).show();
+                }
+            }).show();
+        } else {
+            MainActivity.this.pairSensor();
+        }
     }
 }
