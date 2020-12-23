@@ -328,7 +328,7 @@ public class AmbientDeviceService extends Service {
         }
     }
 
-    public void subscribeToConditionsNotifications(char deviceType) {
+    public void subscribeToConditionsNotifications() {
         isSubscribing = true;
         if (mConditionsDataCharacteristic != null) {
             mConditionsDataDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
@@ -383,7 +383,7 @@ public class AmbientDeviceService extends Service {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
         }
-        Log.v(TAG, "Joey 201222 start pair 003");
+        //Log.v(TAG, "Joey 201222 start pair 003");
         if (mBluetoothGatt != null) {
             Log.d(TAG, "gatt.close()");
             mBluetoothGatt.close();

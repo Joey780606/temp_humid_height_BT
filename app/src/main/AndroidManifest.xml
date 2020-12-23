@@ -27,6 +27,9 @@
         </activity>
 
         <service android:name="pcp.com.bttemperature.ble.AmbientDeviceService" android:enabled="true"/>
+
+        <activity android:label="@string/conditions" android:name="pcp.com.bttemperature.ConditionsActivity" android:screenOrientation="portrait"/>
+
     </application>
 
 </manifest>

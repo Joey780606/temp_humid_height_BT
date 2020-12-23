@@ -88,6 +88,7 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
     private boolean keepScan = false;
 
     public static final String AMBIENT_SENSOR_UUID = "FEB1";
+    public static final String EXTRAS_DISCONNECTION_CODE = "DISCONNECTION_CODE";
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static boolean mDidClickItem;
@@ -199,11 +200,11 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
             MainActivity.this.mAmbientDeviceService = ((AmbientDeviceService.LocalBinder) service).getService();
             Log.e(MainActivity.TAG, "Service Connection Successful");
             if (!MainActivity.this.mAmbientDeviceService.initialize()) {
-                Log.v(TAG, "Joey 201222 start pair 000");
+                //Log.v(TAG, "Joey 201222 start pair 000");
                 Log.e(MainActivity.TAG, "Unable to initialize Bluetooth");
                 MainActivity.this.finish();
             }
-            Log.v(TAG, "Joey 201222 start pair 001");
+            //Log.v(TAG, "Joey 201222 start pair 001");
             MainActivity.this.mAmbientDeviceService.connect(MainActivity.this.mCurrentAmbientDevice.getAddress());
         }
 
@@ -231,9 +232,9 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
         public void onClick(View view) {
             View parentRow = (View) view.getParent().getParent().getParent().getParent();
             AmbientDevice device = AmbientDeviceManager.get(MainActivity.this).getAmbientDevice(((ListView) parentRow.getParent()).getPositionForView(parentRow));
-//            Intent intentTransition = new Intent(DeviceListActivity.this, ConditionsActivity.class);
-//            intentTransition.putExtra("DEVICE_ADDRESS", device.getAddress());
-//            DeviceListActivity.this.startActivityForResult(intentTransition, 3);
+            Intent intentTransition = new Intent(MainActivity.this, ConditionsActivity.class);
+            intentTransition.putExtra("DEVICE_ADDRESS", device.getAddress());
+            MainActivity.this.startActivityForResult(intentTransition, 3);
         }
     };
 
@@ -286,7 +287,7 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
         bindService(gattServiceIntent, this.mServiceConnection, Context.BIND_AUTO_CREATE);
         startService(gattServiceIntent);
         registerReceiver(this.mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        Log.v(TAG, "Joey 201222 start pair");
+        //Log.v(TAG, "Joey 201222 start pair");
         this.mAdapter.notifyDataSetChanged();
         this.mProgressDialog = ProgressDialog.show(this, null, getString(R.string.connecting), true, true, new DialogInterface.OnCancelListener() {
             /* class com.celaer.android.ambient.DeviceListActivity.DialogInterface$OnCancelListenerC02536 */

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="activity_conditions_page_timeTick_width">4px</dimen>
+</resources>

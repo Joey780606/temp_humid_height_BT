@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:background="@color/white" android:layout_width="match_parent" android:layout_height="match_parent">
+    <RelativeLayout android:id="@+id/activity_conditions_page_headerLayout" android:background="@color/gray95" android:layout_width="match_parent" android:layout_height="32dp">
+        <Button android:id="@+id/activity_conditions_page_leftButton" android:background="@drawable/arrow_left" android:paddingRight="10dp" android:layout_width="32dp" android:layout_height="32dp" android:layout_marginLeft="-20dp" android:layout_centerVertical="true" android:layout_alignParentStart="true"/>
+        <TextView android:textSize="15sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_dateTextView" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="New Text" android:layout_centerInParent="true" android:fontFamily="sans-serif"/>
+        <Button android:id="@+id/activity_conditions_page_rightButton" android:background="@drawable/arrow_right" android:paddingLeft="10dp" android:layout_width="32dp" android:layout_height="32dp" android:layout_marginRight="-20dp" android:layout_centerVertical="true" android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
+    <LinearLayout android:orientation="vertical" android:id="@+id/activity_conditions_page_labels_4" android:layout_width="match_parent" android:layout_height="20dp">
+        <LinearLayout android:background="@color/gray95" android:layout_width="match_parent" android:layout_height="20dp">
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_4_1" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="6:00" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:layout_gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_4_2" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="6:15" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:layout_gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_4_3" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="6:30" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:layout_gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_4_4" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="6:45" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:orientation="vertical" android:id="@+id/activity_conditions_page_labels_6" android:layout_width="match_parent" android:layout_height="20dp">
+        <LinearLayout android:background="@color/gray95" android:layout_width="match_parent" android:layout_height="20dp">
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_6_1" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="    " android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:layout_gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_6_2" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="4 " android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:layout_gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_6_3" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="8 " android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:layout_gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_6_4" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="12" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:layout_gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_6_5" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="4 " android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:layout_gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center_vertical" android:id="@+id/activity_conditions_page_6_6" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="4dp" android:text="8 " android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:orientation="vertical" android:id="@+id/activity_conditions_page_labels_7" android:layout_width="match_parent" android:layout_height="20dp">
+        <LinearLayout android:background="@color/gray95" android:layout_width="match_parent" android:layout_height="20dp">
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_7_1" android:layout_width="match_parent" android:layout_height="match_parent" android:text="1" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_7_2" android:layout_width="match_parent" android:layout_height="match_parent" android:text="2" android:fontFamily="sans-serif-light" android:textAlignment="center"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_7_3" android:layout_width="match_parent" android:layout_height="match_parent" android:text="3" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_7_4" android:layout_width="match_parent" android:layout_height="match_parent" android:text="4" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_7_5" android:layout_width="match_parent" android:layout_height="match_parent" android:text="5" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_7_6" android:layout_width="match_parent" android:layout_height="match_parent" android:text="6" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_7_7" android:layout_width="match_parent" android:layout_height="match_parent" android:text="7" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:orientation="vertical" android:id="@+id/activity_conditions_page_labels_3" android:layout_width="match_parent" android:layout_height="20dp">
+        <LinearLayout android:background="@color/gray95" android:layout_width="match_parent" android:layout_height="20dp">
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_3_1" android:layout_width="match_parent" android:layout_height="match_parent" android:text="1" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_3_2" android:layout_width="match_parent" android:layout_height="match_parent" android:text="2" android:fontFamily="sans-serif-light" android:textAlignment="center"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="horizontal" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                <View android:gravity="right" android:background="@color/tickColor" android:layout_width="@dimen/activity_conditions_page_timeTick_width" android:layout_height="20dp"/>
+                <TextView android:textSize="14sp" android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_3_3" android:layout_width="match_parent" android:layout_height="match_parent" android:text="3" android:fontFamily="sans-serif-light"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+    <View android:background="@color/gray80" android:layout_width="match_parent" android:layout_height="4px"/>
+    <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="3">
+            <TextView android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_tempNoData" android:visibility="invisible" android:layout_width="match_parent" android:layout_height="match_parent" android:text="@string/no_data_available"/>
+            <com.androidplot.xy.XYPlot android:id="@+id/activity_conditions_page_chart1" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="-10dp" android:layout_marginRight="-3dp"/>
+        </RelativeLayout>
+        <View android:background="@color/gray80" android:layout_width="match_parent" android:layout_height="4px"/>
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="3">
+            <TextView android:textColor="@color/gray50" android:gravity="center" android:id="@+id/activity_conditions_page_humidityNoData" android:visibility="invisible" android:layout_width="match_parent" android:layout_height="match_parent" android:text="@string/no_data_available"/>
+            <com.androidplot.xy.XYPlot android:id="@+id/activity_conditions_page_chart2" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginLeft="-10dp" android:layout_marginRight="-3dp"/>
+        </RelativeLayout>
+        <View android:background="@color/gray80" android:layout_width="match_parent" android:layout_height="4px"/>
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+            <pcp.com.bttemperature.controls.LightGraph android:id="@+id/activity_conditions_page_lightGraph" android:layout_width="match_parent" android:layout_height="match_parent"/>
+            <TextView android:textColor="@color/gray30" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="5dp" android:text="lux" android:shadowColor="@color/gray90" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="2" android:layout_centerVertical="true"/>
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>
