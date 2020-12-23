@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:background="@drawable/item_sel" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="44dp">
+    <TextView android:textSize="17sp" android:textColor="@color/gray30" android:id="@+id/list_item_double_mainTextView" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Snooze Enabled" android:layout_centerVertical="true" android:fontFamily="sans-serif" android:layout_marginStart="20dp"/>
+    <TextView android:textSize="17sp" android:textColor="@color/gray60" android:gravity="right" android:id="@+id/list_item_double_detailTextView" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Snooze Enabled" android:layout_centerVertical="true" android:fontFamily="sans-serif-light" android:layout_marginEnd="10dp" android:layout_toStartOf="@+id/list_item_double_disclosureImageView" android:layout_toEndOf="@+id/list_item_double_mainTextView"/>
+    <ImageView android:id="@+id/list_item_double_disclosureImageView" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/ic_disclosure" android:layout_centerVertical="true" android:layout_marginEnd="10dp" android:layout_alignParentEnd="true"/>
+</RelativeLayout>

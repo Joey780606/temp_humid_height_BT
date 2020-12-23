@@ -30,7 +30,7 @@
 
         <activity android:label="@string/conditions" android:name="pcp.com.bttemperature.ConditionsActivity" android:screenOrientation="portrait"/>
         <activity android:label="@string/title_activity_sensor_master_settings" android:name="pcp.com.bttemperature.SensorMasterSettingsActivity" android:screenOrientation="portrait"/>
-
+        <activity android:label="@string/title_activity_sensor_settings" android:name="pcp.com.bttemperature.SensorSettingsActivity" android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

@@ -579,11 +579,255 @@ public class ConditionsActivity extends CelaerActivity implements LoaderManager.
     /* JADX WARNING: Removed duplicated region for block: B:84:0x029b  */
     /* JADX WARNING: Removed duplicated region for block: B:95:0x02ef  */
     /* Code decompiled incorrectly, please refer to instructions dump. */
-    public void onLoadFinished(android.content.Loader<android.database.Cursor> r49, android.database.Cursor r50) {
+    public void onLoadFinished(android.content.Loader<android.database.Cursor> paramLoader, android.database.Cursor paramCursor) {
         /*
         // Method dump skipped, instructions count: 1558
         */
-        throw new UnsupportedOperationException("Method not decompiled: com.celaer.android.ambient.ConditionsActivity.onLoadFinished(android.content.Loader, android.database.Cursor):void");
+        //throw new UnsupportedOperationException("Method not decompiled: com.celaer.android.ambient.ConditionsActivity.onLoadFinished(android.content.Loader, android.database.Cursor):void");
+        if (paramCursor != null) {
+            byte b;
+            long l10;
+            Log.d(TAG, "conditions retrieved: " + paramCursor.getCount());
+            paramCursor.moveToFirst();
+            int m = paramCursor.getColumnIndex("timestamp");
+            int n = paramCursor.getColumnIndex("tempC");
+            int i1 = paramCursor.getColumnIndex("humidity");
+            int i2 = paramCursor.getColumnIndex("light");
+            DateFormat.getTimeInstance();
+            valuesTemp.clear();
+            valuesHumidity.clear();
+            valuesLight.clear();
+            valuesTempMaster.clear();
+            valuesHumidityMaster.clear();
+            valuesLightMaster.clear();
+            xAxisTemp.clear();
+            xAxisHumidity.clear();
+            xAxisLight.clear();
+            xAxisMaster.clear();
+            maxY = 200.0F;
+            minY = -41.0F;
+            maxYHumidity = 101.0F;
+            minYHumidity = 0.0F;
+            mAverageTemp = 0.0F;
+            mAverageHumidity = 0.0F;
+            long l8 = 0L;
+            int k = 0;
+            int j = 0;
+            int i = 0;
+            long l4 = 0L;
+            long l3 = 0L;
+            long l2 = 0L;
+            long l7 = 0L;
+            long l6 = 0L;
+            long l5 = 0L;
+            long l1 = 0L;
+            long l9 = 0L;
+            switch (mSelectedZoom) {
+                default:
+                    l10 = 0L;
+                    b = 0;
+                    while (b < paramCursor.getCount()) {
+                        long l11 = paramCursor.getLong(m);
+                        float f1 = paramCursor.getFloat(n);
+                        float f2 = paramCursor.getFloat(i1);
+                        long l15 = paramCursor.getLong(i2);
+                        xAxisMaster.add(Long.valueOf(l11));
+                        if (b == 0) {
+                            if (l11 == timestamp1) {
+                                if (f1 < 70.1D) {
+                                    float f = f1;
+                                    if (!mCurrentAmbientDevice.tempUnitsC)
+                                        f = (float)MainActivity.convertCtoF(f1);
+                                    valuesTemp.add(Float.valueOf(f));
+                                    xAxisTemp.add(Long.valueOf(l11));
+                                    if (maxY > 199.0F) {
+                                        maxY = f;
+                                        minY = f;
+                                    } else if (f > maxY) {
+                                        maxY = f;
+                                    } else if (f < minY) {
+                                        minY = f;
+                                    }
+                                }
+                                if (f2 < 101.0F) {
+                                    valuesHumidity.add(Float.valueOf(f2));
+                                    xAxisHumidity.add(Long.valueOf(l11));
+                                    if (maxYHumidity > 100.0F) {
+                                        maxYHumidity = f2;
+                                        minYHumidity = f2;
+                                    } else if (f2 > maxYHumidity) {
+                                        maxYHumidity = f2;
+                                    } else if (f2 < minYHumidity) {
+                                        minYHumidity = f2;
+                                    }
+                                }
+                                if (l15 < 65535L) {
+                                    valuesLight.add(Long.valueOf(l15));
+                                    xAxisLight.add(Long.valueOf(l11));
+                                }
+                                l9 = 0L;
+                                l10 = (1L + 0L) * l1 + timestamp1;
+                                paramCursor.moveToNext();
+                                long l = l8;
+                                l8 = l4;
+                                l11 = l2;
+                                l4 = l3;
+                                continue;
+                            }
+                            long l17 = (l11 - timestamp1) / l1;
+                            long l16 = l17;
+                            if ((l11 - timestamp1) % l1 == 0L)
+                                l16 = l17 - 1L;
+                            l17 = (1L + l16) * l1 + timestamp1;
+                            long l18 = l8;
+                            int i8 = k;
+                            int i6 = i;
+                            int i7 = j;
+                            continue;
+                        }
+                        long l12 = l9;
+                        int i4 = j;
+                        int i3 = i;
+                        int i5 = k;
+                        long l13 = l10;
+                        long l14 = l8;
+                        if (l11 > l10) {
+                            int i6 = k;
+                            if (k==1) { //Joey fix
+                                mAverageTemp /= k;
+                                l12 = l7;
+                                if (valuesTemp.size() == 0)
+                                    l12 = l4;
+                                valuesTemp.add(Float.valueOf(mAverageTemp));
+                                xAxisTemp.add(Long.valueOf(l12));
+                                if (maxY > 199.0F) {
+                                    maxY = mAverageTemp;
+                                    minY = mAverageTemp;
+                                } else if (mAverageTemp > maxY) {
+                                    maxY = mAverageTemp;
+                                } else if (mAverageTemp < minY) {
+                                    minY = mAverageTemp;
+                                }
+                                mAverageTemp = 0.0F;
+                                i6 = 0;
+                            }
+                            k = j;
+                            if (j == 1) {   //Joey fix
+                                mAverageHumidity /= j;
+                                if (mCurrentAmbientDevice.getDeviceType() == 0)
+                                    mAverageHumidity = Math.round(mAverageHumidity);
+                                l12 = l6;
+                                if (valuesHumidity.size() == 0)
+                                    l12 = l3;
+                                valuesHumidity.add(Float.valueOf(mAverageHumidity));
+                                xAxisHumidity.add(Long.valueOf(l12));
+                                if (maxYHumidity > 100.0F) {
+                                    maxYHumidity = mAverageHumidity;
+                                    minYHumidity = mAverageHumidity;
+                                } else if (mAverageHumidity > maxYHumidity) {
+                                    maxYHumidity = mAverageHumidity;
+                                } else if (mAverageHumidity < minYHumidity) {
+                                    minYHumidity = mAverageHumidity;
+                                }
+                                mAverageHumidity = 0.0F;
+                                k = 0;
+                            }
+                            long l17 = l9;
+                            j = i;
+                            long l18 = l10;
+                            long l16 = l8;
+                            if (i == 1) {   //Joey fix
+                                l8 = Math.round((float)(l8 / i));
+                                l12 = l5;
+                                if (valuesLight.size() == 0)
+                                    l12 = l2;
+                                valuesLight.add(Long.valueOf(l8));
+                                xAxisLight.add(Long.valueOf(l12));
+                                l16 = 0L;
+                                j = 0;
+                                l18 = l10;
+                                l17 = l9;
+                            }
+                            while (true) {
+                                l12 = l17;
+                                i4 = k;
+                                i3 = j;
+                                i5 = i6;
+                                l13 = l18;
+                                l14 = l16;
+                                l17++;
+                                l18 = (1L + l17) * l1 + timestamp1;
+                            }
+                        }
+                        continue;
+                    }
+                    break;
+                case 0:
+                    l1 = 60L;
+                case 1:
+                    l1 = 900L;
+                case 2:
+                    l1 = 3600L;
+                case 3:
+                    l1 = 21600L;
+                case 4:
+                    l1 = 43200L;
+                case 5:
+                    l1 = 345600L;
+            }
+            if (valuesTemp.size() != 0) {
+                mMaxTemp = maxY;
+                mMinTemp = minY;
+                float f1 = maxY - minY;
+                if (mCurrentAmbientDevice.tempUnitsC) {
+                    f1 = Math.abs(f1 / 4.0F);
+                } else {
+                    f1 = Math.abs(f1 / 8.0F);
+                }
+                float f2 = f1;
+                if (f1 < 1.0F)
+                    f2 = 1.0F;
+                minY = (float)Math.floor((minY - f2));
+                maxY = (float)Math.ceil((maxY + f2));
+                if (minY < 0.0F) {
+                    i = (int)minY;
+                    minY -= (5 - i * -1 % 5);
+                } else {
+                    i = (int)minY;
+                    minY -= Math.abs(i % 5);
+                }
+                if (maxY < 0.0F) {
+                    i = (int)maxY;
+                    maxY += (i * -1 % 5);
+                } else {
+                    i = (int)maxY;
+                    maxY += (5 - Math.abs(i % 5));
+                }
+            }
+            if (valuesHumidity.size() != 0) {
+                mMaxHumidity = maxYHumidity;
+                mMinHumidity = minYHumidity;
+                float f2 = (maxYHumidity - minYHumidity) / 4.0F;
+                float f1 = f2;
+                if (f2 < 1.0F)
+                    f1 = 1.0F;
+                minYHumidity = (float)Math.floor((minYHumidity - f1));
+                maxYHumidity = (float)Math.ceil((maxYHumidity + f1));
+                i = (int)minYHumidity;
+                minYHumidity -= (i % 5);
+                i = (int)maxYHumidity;
+                maxYHumidity += (5 - i % 5);
+                if (minYHumidity < 0.0F)
+                    minYHumidity = 0.0F;
+                if (maxYHumidity > 100.0F)
+                    maxYHumidity = 100.0F;
+            }
+        }
+        mLoading = false;
+        mAdapter.notifyDataSetChanged();
+        this.mDisplayCursor = false;
+        mViewPager.setOnTouchListener(null);
+        paramCursor.close();
     }
 
     @Override // android.app.LoaderManager.LoaderCallbacks

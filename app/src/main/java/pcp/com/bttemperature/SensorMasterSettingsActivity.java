@@ -67,9 +67,9 @@ public class SensorMasterSettingsActivity extends CelaerActivity implements Load
 
         public void onClick(View view) {
             if (SensorMasterSettingsActivity.this.isBLEEnabled()) {
-                //Intent intentTransition = new Intent(SensorMasterSettingsActivity.this, SensorSettingsActivity.class);
-                //intentTransition.putExtra("DEVICE_ADDRESS", SensorMasterSettingsActivity.mCurrentAmbientDevice.getAddress());
-                //SensorMasterSettingsActivity.this.startActivityForResult(intentTransition, 4);
+                Intent intentTransition = new Intent(SensorMasterSettingsActivity.this, SensorSettingsActivity.class);
+                intentTransition.putExtra("DEVICE_ADDRESS", SensorMasterSettingsActivity.mCurrentAmbientDevice.getAddress());
+                SensorMasterSettingsActivity.this.startActivityForResult(intentTransition, 4);
                 return;
             }
             SensorMasterSettingsActivity.this.showBLEDialog();
