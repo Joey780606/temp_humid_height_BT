@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
-import de.ewmksoft.xyplot.core.XYPlot;
 import pcp.com.bttemperature.ambientDevice.AmbientDevice;
 import pcp.com.bttemperature.ambientDevice.AmbientDeviceManager;
 import pcp.com.bttemperature.ble.AmbientDeviceService;
@@ -76,6 +75,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import com.androidplot.xy.XYPlot;
 
 //public class MainActivity extends AppCompatActivity {
 public class MainActivity extends CelaerActivity implements LoaderManager.LoaderCallbacks<Cursor> {
