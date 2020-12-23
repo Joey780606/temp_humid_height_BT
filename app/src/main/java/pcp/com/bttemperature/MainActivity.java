@@ -244,9 +244,9 @@ public class MainActivity extends CelaerActivity implements LoaderManager.Loader
         public void onClick(View view) {
             View parentRow = (View) view.getParent().getParent().getParent().getParent();
             AmbientDevice device = AmbientDeviceManager.get(MainActivity.this).getAmbientDevice(((ListView) parentRow.getParent()).getPositionForView(parentRow));
-//            Intent intentTransition = new Intent(MainActivity.this, SensorMasterSettingsActivity.class);
-//            intentTransition.putExtra("DEVICE_ADDRESS", device.getAddress());
-//            MainActivity.this.startActivityForResult(intentTransition, 4);
+            Intent intentTransition = new Intent(MainActivity.this, SensorMasterSettingsActivity.class);
+            intentTransition.putExtra("DEVICE_ADDRESS", device.getAddress());
+            MainActivity.this.startActivityForResult(intentTransition, 4);
         }
     };
 

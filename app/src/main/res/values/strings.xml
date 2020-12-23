@@ -141,4 +141,6 @@
     <string name="year">Year</string>
     <string name="yesterday">Yesterday</string>
     <string name="hello_world">Hello world!</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>
